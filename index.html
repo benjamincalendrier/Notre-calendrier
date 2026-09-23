@@ -1,249 +1,380 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notre Calendrier</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<title>Notre Calendrier</title>
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f7f7f7;
-      color: #222;
-    }
+<style>
 
-    .app {
-      max-width: 900px;
-      margin: auto;
-      background: white;
-      min-height: 100vh;
-    }
+* {
+  box-sizing: border-box;
+}
 
-    .header {
-      padding: 14px;
-      background: white;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      border-bottom: 1px solid #ddd;
-    }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f7f7f7;
+  color: #222;
+}
 
-    .topline {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
+.app {
+  max-width: 900px;
+  margin: auto;
+  min-height: 100vh;
+  background: white;
+}
 
-    h1 {
-      margin: 0;
-      font-size: 22px;
-    }
+.header {
+  padding: 14px 10px 8px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: white;
+  border-bottom: 1px solid #ddd;
+}
 
-    button {
-      border: 0;
-      border-radius: 10px;
-      padding: 9px 12px;
-      font-size: 15px;
-      background: #eee;
-    }
+.topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
 
-    .month {
-      font-size: 23px;
-      font-weight: bold;
-      margin-top: 12px;
-      text-transform: capitalize;
-    }
+h1 {
+  margin: 0;
+  font-size: 21px;
+}
 
-    .weekdays {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      margin-top: 12px;
-      font-size: 12px;
-      color: #777;
-      text-align: center;
-    }
+button {
+  border: 0;
+  border-radius: 9px;
+  padding: 9px 10px;
+  font-size: 14px;
+  background: #eee;
+}
 
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      border-top: 1px solid #ddd;
-      border-left: 1px solid #ddd;
-    }
+.month {
+  margin-top: 12px;
+  font-size: 23px;
+  font-weight: bold;
+  text-transform: capitalize;
+}
 
-    .day {
-      min-height: 105px;
-      border-right: 1px solid #ddd;
-      border-bottom: 1px solid #ddd;
-      padding: 3px;
-      background: white;
-      overflow: hidden;
-    }
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-top: 10px;
+  text-align: center;
+  color: #777;
+  font-size: 12px;
+}
 
-    .other-month {
-      background: #fafafa;
-      color: #aaa;
-    }
+.calendar {
+  background: white;
+}
 
-    .today {
-      box-shadow: inset 0 0 0 2px #30b86b;
-    }
+/* UNE LIGNE DE SEMAINE */
 
-    .day-number {
-      font-size: 12px;
-      font-weight: bold;
-      margin-bottom: 3px;
-    }
+.week {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  height: 116px;
 
-    .event {
-      font-size: 10px;
-      line-height: 1.2;
-      padding: 3px 4px;
-      margin-bottom: 2px;
-      border-radius: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: #111;
-    }
+  border-left: 1px solid #ddd;
+  border-top: 1px solid #ddd;
+}
 
-    .more {
-      font-size: 10px;
-      font-weight: bold;
-      color: #666;
-    }
+/* LES 7 JOURS */
 
-    .add {
-      position: fixed;
-      right: 20px;
-      bottom: 22px;
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      background: #1db954;
-      color: white;
-      font-size: 30px;
-      box-shadow: 0 4px 15px #999;
-    }
+.day {
+  position: relative;
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  background: white;
+  min-width: 0;
+}
 
-    dialog {
-      width: 92%;
-      max-width: 430px;
-      border: 0;
-      border-radius: 16px;
-      padding: 0;
-    }
+.day.other-month {
+  background: #fafafa;
+  color: #aaa;
+}
 
-    dialog::backdrop {
-      background: rgba(0,0,0,.4);
-    }
+.day.today {
+  box-shadow: inset 0 0 0 2px #30b86b;
+}
 
-    .modal {
-      padding: 18px;
-    }
+.day-number {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  z-index: 3;
+  font-size: 11px;
+  font-weight: bold;
+}
 
-    .modal h2 {
-      margin-top: 0;
-    }
+/* CALQUE DES EVENEMENTS */
 
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: bold;
-      margin-top: 12px;
-      margin-bottom: 5px;
-    }
+.week-events {
+  position: absolute;
 
-    input,
-    textarea {
-      width: 100%;
-      border: 1px solid #bbb;
-      border-radius: 9px;
-      padding: 10px;
-      font-size: 16px;
-    }
+  left: 0;
+  right: 0;
 
-    textarea {
-      min-height: 70px;
-    }
+  top: 23px;
 
-    .colors {
-      display: flex;
-      gap: 10px;
-      margin-top: 8px;
-      flex-wrap: wrap;
-    }
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(5, 16px);
 
-    .color {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      padding: 0;
-      border: 3px solid transparent;
-    }
+  row-gap: 2px;
 
-    .color.selected {
-      border-color: #222;
-    }
+  pointer-events: none;
 
-    .actions {
-      margin-top: 16px;
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-    }
+  z-index: 5;
+}
 
-    .save {
-      background: #222;
-      color: white;
-    }
+/* BARRE EVENEMENT */
 
-    .delete {
-      background: #ffd7d7;
-      color: #900;
-      margin-right: auto;
-    }
+.event-bar {
+  min-width: 0;
 
-    .event-list-item {
-      padding: 10px;
-      margin-bottom: 7px;
-      border-radius: 8px;
-      font-size: 15px;
-    }
+  margin-left: 2px;
+  margin-right: 2px;
 
-    .search-result {
-      padding: 10px;
-      margin-bottom: 8px;
-      border-radius: 8px;
-      font-size: 15px;
-    }
+  border-radius: 4px;
 
-    .search-date {
-      font-weight: bold;
-      margin-bottom: 3px;
-    }
+  padding: 2px 4px;
 
-    @media(max-width: 500px) {
-      .day {
-        min-height: 95px;
-      }
+  font-size: 10px;
+  line-height: 12px;
 
-      .event {
-        font-size: 9px;
-        padding: 2px 3px;
-      }
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
-      .day-number,
-      .more {
-        font-size: 10px;
-      }
-    }
-  </style>
+  color: #111;
+
+  pointer-events: auto;
+
+  cursor: pointer;
+
+  z-index: 6;
+}
+
+/* BARRE QUI CONTINUE DEPUIS JOUR PRECEDENT */
+
+.event-bar.continue-left {
+  margin-left: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* BARRE QUI CONTINUE LE JOUR SUIVANT */
+
+.event-bar.continue-right {
+  margin-right: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* +X EVENEMENTS */
+
+.more {
+  position: absolute;
+  bottom: 3px;
+  left: 4px;
+
+  font-size: 10px;
+  font-weight: bold;
+  color: #555;
+
+  z-index: 8;
+}
+
+/* BOUTON + */
+
+.add {
+  position: fixed;
+  right: 20px;
+  bottom: 22px;
+
+  width: 58px;
+  height: 58px;
+
+  padding: 0;
+
+  border-radius: 50%;
+
+  background: #1db954;
+  color: white;
+
+  font-size: 30px;
+
+  box-shadow: 0 4px 15px #999;
+
+  z-index: 30;
+}
+
+/* FENETRES */
+
+dialog {
+  width: 92%;
+  max-width: 430px;
+
+  border: 0;
+  border-radius: 16px;
+
+  padding: 0;
+}
+
+dialog::backdrop {
+  background: rgba(0,0,0,.4);
+}
+
+.modal {
+  padding: 18px;
+}
+
+.modal h2 {
+  margin-top: 0;
+}
+
+label {
+  display: block;
+
+  margin-top: 12px;
+  margin-bottom: 5px;
+
+  font-size: 13px;
+  font-weight: bold;
+}
+
+input,
+textarea {
+  width: 100%;
+
+  border: 1px solid #bbb;
+  border-radius: 9px;
+
+  padding: 10px;
+
+  font-size: 16px;
+}
+
+textarea {
+  min-height: 70px;
+}
+
+.colors {
+  display: flex;
+  gap: 10px;
+
+  margin-top: 8px;
+
+  flex-wrap: wrap;
+}
+
+.color {
+  width: 34px;
+  height: 34px;
+
+  padding: 0;
+
+  border-radius: 50%;
+
+  border: 3px solid transparent;
+}
+
+.color.selected {
+  border-color: #222;
+}
+
+.actions {
+  margin-top: 16px;
+
+  display: flex;
+  gap: 8px;
+
+  justify-content: flex-end;
+}
+
+.save {
+  background: #222;
+  color: white;
+}
+
+.delete {
+  background: #ffd7d7;
+  color: #900;
+
+  margin-right: auto;
+}
+
+.event-list-item {
+  padding: 10px;
+
+  margin-bottom: 7px;
+
+  border-radius: 8px;
+
+  font-size: 15px;
+}
+
+.search-result {
+  padding: 10px;
+
+  margin-bottom: 8px;
+
+  border-radius: 8px;
+
+  font-size: 15px;
+}
+
+.search-date {
+  font-weight: bold;
+  margin-bottom: 3px;
+}
+
+@media(max-width: 500px) {
+
+  .header {
+    padding-left: 7px;
+    padding-right: 7px;
+  }
+
+  h1 {
+    font-size: 18px;
+  }
+
+  button {
+    padding: 8px 8px;
+    font-size: 12px;
+  }
+
+  .week {
+    height: 108px;
+  }
+
+  .week-events {
+    grid-template-rows: repeat(5, 15px);
+  }
+
+  .event-bar {
+    font-size: 9px;
+    line-height: 11px;
+    padding: 2px 3px;
+  }
+
+  .day-number {
+    font-size: 10px;
+  }
+
+}
+
+</style>
 </head>
 
 <body>
@@ -253,19 +384,27 @@
   <div class="header">
 
     <div class="topline">
+
       <h1>Notre Calendrier</h1>
 
       <div>
+
         <button onclick="openSearch()">🔍</button>
+
         <button onclick="previousMonth()">‹</button>
+
         <button onclick="goToday()">Aujourd'hui</button>
+
         <button onclick="nextMonth()">›</button>
+
       </div>
+
     </div>
 
     <div class="month" id="monthTitle"></div>
 
     <div class="weekdays">
+
       <div>Lun</div>
       <div>Mar</div>
       <div>Mer</div>
@@ -273,37 +412,56 @@
       <div>Ven</div>
       <div>Sam</div>
       <div>Dim</div>
+
     </div>
 
   </div>
 
-  <div class="calendar" id="calendar"></div>
+  <div id="calendar" class="calendar"></div>
 
 </div>
 
-<button class="add" onclick="openNewEvent()">+</button>
+<button
+  class="add"
+  onclick="openNewEvent()">
+  +
+</button>
+
+
+<!-- AJOUT / MODIFICATION -->
 
 <dialog id="eventDialog">
 
   <div class="modal">
 
-    <h2 id="dialogTitle">Nouvel événement</h2>
+    <h2 id="dialogTitle">
+      Nouvel événement
+    </h2>
 
     <label>Date</label>
-    <input type="date" id="startDate">
+
+    <input
+      type="date"
+      id="startDate">
 
     <label>Jusqu'au (facultatif)</label>
-    <input type="date" id="endDate">
+
+    <input
+      type="date"
+      id="endDate">
 
     <label>Événement</label>
+
     <textarea
       id="eventText"
-      placeholder="Exemple : Piscine 10h">
-    </textarea>
+      placeholder="Exemple : Piscine 10h"></textarea>
 
     <label>Couleur</label>
 
-    <div class="colors" id="colors"></div>
+    <div
+      class="colors"
+      id="colors">
+    </div>
 
     <div class="actions">
 
@@ -330,6 +488,9 @@
 
 </dialog>
 
+
+<!-- JOURNEE COMPLETE -->
+
 <dialog id="dayDialog">
 
   <div class="modal">
@@ -344,7 +505,8 @@
         Ajouter
       </button>
 
-      <button onclick="document.getElementById('dayDialog').close()">
+      <button
+        onclick="document.getElementById('dayDialog').close()">
         Fermer
       </button>
 
@@ -353,6 +515,9 @@
   </div>
 
 </dialog>
+
+
+<!-- RECHERCHE -->
 
 <dialog id="searchDialog">
 
@@ -383,16 +548,21 @@
 
 </dialog>
 
+
 <script>
 
 const COLORS = [
+
   "#b9ddff",
   "#b9efc6",
   "#ffc5d3",
   "#ffd2a8",
   "#d8c9ff",
   "#d5d5d5"
+
 ];
+
+const MAX_LANES = 5;
 
 let displayedMonth = new Date();
 
@@ -409,31 +579,85 @@ let editingId = null;
 
 let selectedDay = null;
 
+
+/* ---------------------
+   DATES
+---------------------- */
+
 function dateString(date) {
 
-  const y = date.getFullYear();
+  const y =
+    date.getFullYear();
 
   const m =
-    String(date.getMonth() + 1)
-    .padStart(2, "0");
+    String(
+      date.getMonth() + 1
+    ).padStart(2, "0");
 
   const d =
-    String(date.getDate())
-    .padStart(2, "0");
+    String(
+      date.getDate()
+    ).padStart(2, "0");
 
   return y + "-" + m + "-" + d;
+
 }
+
+
+function parseDate(str) {
+
+  const parts =
+    str.split("-");
+
+  return new Date(
+    Number(parts[0]),
+    Number(parts[1]) - 1,
+    Number(parts[2])
+  );
+
+}
+
+
+function addDays(date, days) {
+
+  const d =
+    new Date(date);
+
+  d.setDate(
+    d.getDate() + days
+  );
+
+  return d;
+
+}
+
+
+/* ---------------------
+   STOCKAGE
+---------------------- */
 
 function loadEvents() {
 
   const saved =
-    localStorage.getItem("familyCalendar");
+    localStorage.getItem(
+      "familyCalendar"
+    );
 
   if (!saved)
     return [];
 
-  return JSON.parse(saved);
+  try {
+
+    return JSON.parse(saved);
+
+  } catch {
+
+    return [];
+
+  }
+
 }
+
 
 function storeEvents(events) {
 
@@ -441,95 +665,265 @@ function storeEvents(events) {
     "familyCalendar",
     JSON.stringify(events)
   );
+
 }
+
+
+/* ---------------------
+   EVENEMENTS D'UN JOUR
+---------------------- */
 
 function eventsForDay(day) {
 
-  return loadEvents().filter(event => {
+  return loadEvents()
+    .filter(event => {
 
-    const end =
-      event.end || event.start;
+      const end =
+        event.end || event.start;
 
-    return (
-      event.start <= day &&
-      end >= day
+      return (
+        event.start <= day &&
+        end >= day
+      );
+
+    })
+    .sort(sortEventsPriority);
+
+}
+
+
+/* ---------------------
+   PRIORITE
+---------------------- */
+
+function isMultiDay(event) {
+
+  const end =
+    event.end || event.start;
+
+  return end > event.start;
+
+}
+
+
+function eventDuration(event) {
+
+  const start =
+    parseDate(event.start);
+
+  const end =
+    parseDate(
+      event.end || event.start
     );
 
-  });
+  return Math.round(
+    (end - start)
+    / 86400000
+  ) + 1;
+
 }
+
+
+function sortEventsPriority(a, b) {
+
+  const aMulti =
+    isMultiDay(a);
+
+  const bMulti =
+    isMultiDay(b);
+
+  if (
+    aMulti &&
+    !bMulti
+  )
+    return -1;
+
+  if (
+    !aMulti &&
+    bMulti
+  )
+    return 1;
+
+  if (
+    aMulti &&
+    bMulti
+  ) {
+
+    const durationDifference =
+      eventDuration(b)
+      -
+      eventDuration(a);
+
+    if (
+      durationDifference !== 0
+    )
+      return durationDifference;
+
+  }
+
+  return (
+    a.start.localeCompare(
+      b.start
+    )
+  );
+
+}
+
+
+/* ---------------------
+   CALENDRIER
+---------------------- */
 
 function renderCalendar() {
 
   const calendar =
-    document.getElementById("calendar");
+    document.getElementById(
+      "calendar"
+    );
 
   calendar.innerHTML = "";
 
-  document.getElementById("monthTitle")
-    .textContent =
-      displayedMonth.toLocaleDateString(
-        "fr-FR",
-        {
-          month: "long",
-          year: "numeric"
-        }
-      );
+
+  document.getElementById(
+    "monthTitle"
+  ).textContent =
+    displayedMonth.toLocaleDateString(
+      "fr-FR",
+      {
+        month: "long",
+        year: "numeric"
+      }
+    );
+
 
   const first =
-    new Date(displayedMonth);
+    new Date(
+      displayedMonth
+    );
+
 
   let weekday =
     first.getDay();
 
-  if (weekday === 0)
+  if (
+    weekday === 0
+  )
     weekday = 7;
 
-  const start =
+
+  const calendarStart =
     new Date(first);
 
-  start.setDate(
-    first.getDate() - weekday + 1
+  calendarStart.setDate(
+    first.getDate()
+    -
+    weekday
+    +
+    1
   );
 
+
+  for (
+    let weekIndex = 0;
+    weekIndex < 6;
+    weekIndex++
+  ) {
+
+    const weekStart =
+      addDays(
+        calendarStart,
+        weekIndex * 7
+      );
+
+    renderWeek(
+      calendar,
+      weekStart
+    );
+
+  }
+
+}
+
+
+/* ---------------------
+   UNE SEMAINE
+---------------------- */
+
+function renderWeek(
+  calendar,
+  weekStart
+) {
+
+  const week =
+    document.createElement(
+      "div"
+    );
+
+  week.className =
+    "week";
+
+
   const today =
-    dateString(new Date());
+    dateString(
+      new Date()
+    );
+
+
+  /* JOURNEES */
 
   for (
     let i = 0;
-    i < 42;
+    i < 7;
     i++
   ) {
 
     const date =
-      new Date(start);
-
-    date.setDate(
-      start.getDate() + i
-    );
+      addDays(
+        weekStart,
+        i
+      );
 
     const ds =
       dateString(date);
 
-    const day =
-      document.createElement("div");
 
-    day.className = "day";
+    const day =
+      document.createElement(
+        "div"
+      );
+
+    day.className =
+      "day";
+
 
     if (
-      date.getMonth() !==
+      date.getMonth()
+      !==
       displayedMonth.getMonth()
-    )
+    ) {
+
       day.classList.add(
         "other-month"
       );
 
-    if (ds === today)
+    }
+
+
+    if (
+      ds === today
+    ) {
+
       day.classList.add(
         "today"
       );
 
+    }
+
+
     const number =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     number.className =
       "day-number";
@@ -537,54 +931,11 @@ function renderCalendar() {
     number.textContent =
       date.getDate();
 
-    day.appendChild(number);
 
-    const events =
-      eventsForDay(ds);
+    day.appendChild(
+      number
+    );
 
-    events
-      .slice(0,5)
-      .forEach(event => {
-
-        const item =
-          document.createElement("div");
-
-        item.className =
-          "event";
-
-        item.style.background =
-          event.color;
-
-        item.textContent =
-          event.text;
-
-        item.onclick =
-          function(e) {
-
-            e.stopPropagation();
-
-            editEvent(event.id);
-
-          };
-
-        day.appendChild(item);
-
-      });
-
-    if (events.length > 5) {
-
-      const more =
-        document.createElement("div");
-
-      more.className =
-        "more";
-
-      more.textContent =
-        "+" + (events.length - 5);
-
-      day.appendChild(more);
-
-    }
 
     day.onclick =
       function() {
@@ -593,33 +944,441 @@ function renderCalendar() {
 
       };
 
-    calendar.appendChild(day);
+
+    week.appendChild(
+      day
+    );
+
   }
+
+
+  /* CALQUE EVENEMENTS */
+
+  const layer =
+    document.createElement(
+      "div"
+    );
+
+  layer.className =
+    "week-events";
+
+  week.appendChild(
+    layer
+  );
+
+
+  placeWeekEvents(
+    layer,
+    week,
+    weekStart
+  );
+
+
+  calendar.appendChild(
+    week
+  );
+
 }
+
+
+/* ---------------------
+   PLACEMENT DES BARRES
+---------------------- */
+
+function placeWeekEvents(
+  layer,
+  week,
+  weekStart
+) {
+
+  const weekEnd =
+    addDays(
+      weekStart,
+      6
+    );
+
+
+  const weekStartStr =
+    dateString(
+      weekStart
+    );
+
+  const weekEndStr =
+    dateString(
+      weekEnd
+    );
+
+
+  const allEvents =
+    loadEvents();
+
+
+  /* EVENEMENTS QUI CROISENT CETTE SEMAINE */
+
+  const relevant =
+    allEvents
+    .filter(event => {
+
+      const end =
+        event.end
+        ||
+        event.start;
+
+      return (
+        event.start <= weekEndStr
+        &&
+        end >= weekStartStr
+      );
+
+    })
+    .sort(
+      sortEventsPriority
+    );
+
+
+  /*
+    lanes[ligne][jour]
+
+    null = disponible
+
+    id = occupé
+  */
+
+  const lanes =
+    Array.from(
+      {
+        length:
+          MAX_LANES
+      },
+      () =>
+        Array(7).fill(null)
+    );
+
+
+  const hiddenPerDay =
+    Array(7).fill(0);
+
+
+  relevant.forEach(
+    event => {
+
+      const eventStart =
+        parseDate(
+          event.start
+        );
+
+      const eventEnd =
+        parseDate(
+          event.end
+          ||
+          event.start
+        );
+
+
+      const segmentStart =
+        eventStart > weekStart
+        ?
+        eventStart
+        :
+        weekStart;
+
+
+      const segmentEnd =
+        eventEnd < weekEnd
+        ?
+        eventEnd
+        :
+        weekEnd;
+
+
+      const startIndex =
+        Math.round(
+          (
+            segmentStart
+            -
+            weekStart
+          )
+          /
+          86400000
+        );
+
+
+      const endIndex =
+        Math.round(
+          (
+            segmentEnd
+            -
+            weekStart
+          )
+          /
+          86400000
+        );
+
+
+      let laneFound =
+        -1;
+
+
+      /*
+        Chercher une ligne libre
+        sur TOUTE la durée.
+      */
+
+      for (
+        let lane = 0;
+        lane < MAX_LANES;
+        lane++
+      ) {
+
+        let free =
+          true;
+
+
+        for (
+          let d = startIndex;
+          d <= endIndex;
+          d++
+        ) {
+
+          if (
+            lanes[lane][d]
+            !== null
+          ) {
+
+            free =
+              false;
+
+            break;
+
+          }
+
+        }
+
+
+        if (
+          free
+        ) {
+
+          laneFound =
+            lane;
+
+          break;
+
+        }
+
+      }
+
+
+      /*
+        Plus de place :
+        +X sur les journées concernées
+      */
+
+      if (
+        laneFound === -1
+      ) {
+
+        for (
+          let d = startIndex;
+          d <= endIndex;
+          d++
+        ) {
+
+          hiddenPerDay[d]++;
+
+        }
+
+        return;
+
+      }
+
+
+      /*
+        Réserver la ligne
+      */
+
+      for (
+        let d = startIndex;
+        d <= endIndex;
+        d++
+      ) {
+
+        lanes[
+          laneFound
+        ][d] =
+          event.id;
+
+      }
+
+
+      /*
+        Créer la barre
+      */
+
+      const bar =
+        document.createElement(
+          "div"
+        );
+
+      bar.className =
+        "event-bar";
+
+
+      /*
+        Barre qui continue
+        avant la semaine ?
+      */
+
+      if (
+        eventStart < weekStart
+      ) {
+
+        bar.classList.add(
+          "continue-left"
+        );
+
+      }
+
+
+      /*
+        Barre qui continue
+        après la semaine ?
+      */
+
+      if (
+        eventEnd > weekEnd
+      ) {
+
+        bar.classList.add(
+          "continue-right"
+        );
+
+      }
+
+
+      bar.style.background =
+        event.color;
+
+
+      bar.style.gridColumn =
+        (startIndex + 1)
+        +
+        " / "
+        +
+        (endIndex + 2);
+
+
+      bar.style.gridRow =
+        laneFound + 1;
+
+
+      /*
+        Sur une reprise de semaine,
+        on affiche quand même le texte.
+      */
+
+      bar.textContent =
+        event.text;
+
+
+      bar.onclick =
+        function(e) {
+
+          e.stopPropagation();
+
+          editEvent(
+            event.id
+          );
+
+        };
+
+
+      layer.appendChild(
+        bar
+      );
+
+  });
+
+
+  /*
+    Afficher +X
+  */
+
+  const dayCells =
+    week.querySelectorAll(
+      ".day"
+    );
+
+
+  hiddenPerDay.forEach(
+    (
+      hidden,
+      index
+    ) => {
+
+      if (
+        hidden <= 0
+      )
+        return;
+
+
+      const more =
+        document.createElement(
+          "div"
+        );
+
+      more.className =
+        "more";
+
+      more.textContent =
+        "+"
+        +
+        hidden;
+
+
+      dayCells[
+        index
+      ].appendChild(
+        more
+      );
+
+    }
+  );
+
+}
+
+
+/* ---------------------
+   NAVIGATION
+---------------------- */
 
 function previousMonth() {
 
   displayedMonth =
     new Date(
       displayedMonth.getFullYear(),
-      displayedMonth.getMonth()-1,
+      displayedMonth.getMonth() - 1,
       1
     );
 
   renderCalendar();
+
 }
+
 
 function nextMonth() {
 
   displayedMonth =
     new Date(
       displayedMonth.getFullYear(),
-      displayedMonth.getMonth()+1,
+      displayedMonth.getMonth() + 1,
       1
     );
 
   renderCalendar();
+
 }
+
 
 function goToday() {
 
@@ -634,180 +1393,276 @@ function goToday() {
     );
 
   renderCalendar();
+
 }
+
+
+/* ---------------------
+   COULEURS
+---------------------- */
 
 function buildColors() {
 
   const container =
-    document.getElementById("colors");
+    document.getElementById(
+      "colors"
+    );
 
   container.innerHTML = "";
 
-  COLORS.forEach(color => {
 
-    const button =
-      document.createElement("button");
+  COLORS.forEach(
+    color => {
 
-    button.className =
-      "color";
+      const button =
+        document.createElement(
+          "button"
+        );
 
-    button.style.background =
-      color;
+      button.className =
+        "color";
 
-    if (
-      color === selectedColor
-    )
-      button.classList.add(
-        "selected"
+      button.style.background =
+        color;
+
+
+      if (
+        color === selectedColor
+      ) {
+
+        button.classList.add(
+          "selected"
+        );
+
+      }
+
+
+      button.onclick =
+        function() {
+
+          selectedColor =
+            color;
+
+          buildColors();
+
+        };
+
+
+      container.appendChild(
+        button
       );
 
-    button.onclick =
-      function() {
+    }
+  );
 
-        selectedColor =
-          color;
-
-        buildColors();
-      };
-
-    container.appendChild(button);
-  });
 }
+
+
+/* ---------------------
+   NOUVEL EVENEMENT
+---------------------- */
 
 function openNewEvent(day) {
 
-  editingId = null;
+  editingId =
+    null;
 
   selectedColor =
     COLORS[0];
+
 
   document.getElementById(
     "dialogTitle"
   ).textContent =
     "Nouvel événement";
 
+
   document.getElementById(
     "eventText"
-  ).value = "";
+  ).value =
+    "";
+
 
   document.getElementById(
     "endDate"
-  ).value = "";
+  ).value =
+    "";
+
 
   document.getElementById(
     "startDate"
   ).value =
-    day || dateString(new Date());
+    day
+    ||
+    dateString(
+      new Date()
+    );
+
 
   document.getElementById(
     "deleteButton"
   ).style.display =
     "none";
 
+
   buildColors();
+
 
   document.getElementById(
     "eventDialog"
   ).showModal();
+
 }
+
+
+/* ---------------------
+   MODIFIER
+---------------------- */
 
 function editEvent(id) {
 
   const events =
     loadEvents();
 
+
   const event =
     events.find(
-      x => x.id === id
+      x =>
+        x.id === id
     );
 
-  if (!event)
+
+  if (
+    !event
+  )
     return;
 
-  editingId = id;
+
+  editingId =
+    id;
+
 
   selectedColor =
-    event.color;
+    event.color
+    ||
+    COLORS[0];
+
 
   document.getElementById(
     "dialogTitle"
   ).textContent =
     "Modifier l'événement";
 
+
   document.getElementById(
     "eventText"
   ).value =
     event.text;
+
 
   document.getElementById(
     "startDate"
   ).value =
     event.start;
 
+
   document.getElementById(
     "endDate"
   ).value =
     event.end || "";
+
 
   document.getElementById(
     "deleteButton"
   ).style.display =
     "block";
 
+
   buildColors();
+
 
   document.getElementById(
     "eventDialog"
   ).showModal();
+
 }
+
+
+/* ---------------------
+   SAUVEGARDER
+---------------------- */
 
 function saveEvent() {
 
   const text =
     document.getElementById(
       "eventText"
-    ).value.trim();
+    )
+    .value
+    .trim();
+
 
   const start =
     document.getElementById(
       "startDate"
     ).value;
 
+
   let end =
     document.getElementById(
       "endDate"
     ).value;
 
-  if (!text || !start) {
+
+  if (
+    !text
+    ||
+    !start
+  ) {
 
     alert(
       "Ajoute au moins une date et un événement."
     );
 
     return;
+
   }
 
-  if (!end)
-    end = start;
 
-  if (end < start) {
+  if (
+    !end
+  )
+    end =
+      start;
+
+
+  if (
+    end < start
+  ) {
 
     alert(
       "La date de fin doit être après la date de début."
     );
 
     return;
+
   }
+
 
   let events =
     loadEvents();
 
-  if (editingId) {
+
+  if (
+    editingId
+  ) {
 
     const event =
       events.find(
-        x => x.id === editingId
+        x =>
+          x.id === editingId
       );
+
 
     event.text =
       text;
@@ -841,19 +1696,34 @@ function saveEvent() {
         selectedColor
 
     });
+
   }
 
-  storeEvents(events);
+
+  storeEvents(
+    events
+  );
+
 
   closeDialog();
 
+
   renderCalendar();
+
 }
+
+
+/* ---------------------
+   SUPPRIMER
+---------------------- */
 
 function deleteEvent() {
 
-  if (!editingId)
+  if (
+    !editingId
+  )
     return;
+
 
   if (
     !confirm(
@@ -862,37 +1732,61 @@ function deleteEvent() {
   )
     return;
 
+
   let events =
     loadEvents();
 
+
   events =
     events.filter(
-      e => e.id !== editingId
+      event =>
+        event.id
+        !==
+        editingId
     );
 
-  storeEvents(events);
+
+  storeEvents(
+    events
+  );
+
 
   closeDialog();
 
+
   renderCalendar();
+
 }
+
+
+/* ---------------------
+   FERMER
+---------------------- */
 
 function closeDialog() {
 
   document.getElementById(
     "eventDialog"
   ).close();
+
 }
+
+
+/* ---------------------
+   JOURNEE
+---------------------- */
 
 function openDay(day) {
 
   selectedDay =
     day;
 
+
   const date =
-    new Date(
-      day + "T12:00:00"
+    parseDate(
+      day
     );
+
 
   document.getElementById(
     "dayTitle"
@@ -900,59 +1794,91 @@ function openDay(day) {
     date.toLocaleDateString(
       "fr-FR",
       {
-        weekday: "long",
-        day: "numeric",
-        month: "long"
+        weekday:
+          "long",
+
+        day:
+          "numeric",
+
+        month:
+          "long"
       }
     );
+
 
   const container =
     document.getElementById(
       "dayEvents"
     );
 
-  container.innerHTML = "";
+
+  container.innerHTML =
+    "";
+
 
   const events =
-    eventsForDay(day);
+    eventsForDay(
+      day
+    );
 
-  if (!events.length) {
+
+  if (
+    !events.length
+  ) {
 
     container.textContent =
       "Aucun événement.";
+
   }
 
-  events.forEach(event => {
 
-    const item =
-      document.createElement("div");
+  events.forEach(
+    event => {
 
-    item.className =
-      "event-list-item";
+      const item =
+        document.createElement(
+          "div"
+        );
 
-    item.style.background =
-      event.color;
+      item.className =
+        "event-list-item";
 
-    item.textContent =
-      event.text;
+      item.style.background =
+        event.color;
 
-    item.onclick =
-      function() {
+      item.textContent =
+        event.text;
 
-        document.getElementById(
-          "dayDialog"
-        ).close();
 
-        editEvent(event.id);
-      };
+      item.onclick =
+        function() {
 
-    container.appendChild(item);
-  });
+          document.getElementById(
+            "dayDialog"
+          ).close();
+
+
+          editEvent(
+            event.id
+          );
+
+        };
+
+
+      container.appendChild(
+        item
+      );
+
+    }
+  );
+
 
   document.getElementById(
     "dayDialog"
   ).showModal();
+
 }
+
 
 function addFromDay() {
 
@@ -960,123 +1886,219 @@ function addFromDay() {
     "dayDialog"
   ).close();
 
+
   openNewEvent(
     selectedDay
   );
+
 }
+
+
+/* ---------------------
+   RECHERCHE
+---------------------- */
 
 function openSearch() {
 
   document.getElementById(
     "searchInput"
-  ).value = "";
+  ).value =
+    "";
+
 
   document.getElementById(
     "searchResults"
-  ).innerHTML = "";
+  ).innerHTML =
+    "";
+
 
   document.getElementById(
     "searchDialog"
   ).showModal();
 
-  setTimeout(() => {
-    document.getElementById(
-      "searchInput"
-    ).focus();
-  }, 100);
+
+  setTimeout(
+    () => {
+
+      document.getElementById(
+        "searchInput"
+      ).focus();
+
+    },
+    100
+  );
+
 }
+
 
 function closeSearch() {
 
   document.getElementById(
     "searchDialog"
   ).close();
+
 }
+
 
 function searchEvents() {
 
   const query =
     document.getElementById(
       "searchInput"
-    ).value
+    )
+    .value
     .trim()
     .toLowerCase();
+
 
   const results =
     document.getElementById(
       "searchResults"
     );
 
-  results.innerHTML = "";
 
-  if (!query)
+  results.innerHTML =
+    "";
+
+
+  if (
+    !query
+  )
     return;
+
 
   const events =
     loadEvents()
-    .filter(event =>
-      event.text
+    .filter(
+      event =>
+        event.text
         .toLowerCase()
-        .includes(query)
+        .includes(
+          query
+        )
     )
-    .sort((a,b) =>
-      b.start.localeCompare(a.start)
+    .sort(
+      (a,b) =>
+        b.start.localeCompare(
+          a.start
+        )
     );
 
-  if (!events.length) {
+
+  if (
+    !events.length
+  ) {
 
     results.innerHTML =
       "<p>Aucun résultat.</p>";
 
     return;
+
   }
 
-  events.forEach(event => {
 
-    const item =
-      document.createElement("div");
+  events.forEach(
+    event => {
 
-    item.className =
-      "search-result";
+      const item =
+        document.createElement(
+          "div"
+        );
 
-    item.style.background =
-      event.color;
+      item.className =
+        "search-result";
 
-    const date =
-      new Date(
-        event.start + "T12:00:00"
+      item.style.background =
+        event.color;
+
+
+      const date =
+        parseDate(
+          event.start
+        );
+
+
+      const dateDiv =
+        document.createElement(
+          "div"
+        );
+
+      dateDiv.className =
+        "search-date";
+
+
+      if (
+        isMultiDay(
+          event
+        )
+      ) {
+
+        const end =
+          parseDate(
+            event.end
+          );
+
+
+        dateDiv.textContent =
+          date.toLocaleDateString(
+            "fr-FR"
+          )
+          +
+          " → "
+          +
+          end.toLocaleDateString(
+            "fr-FR"
+          );
+
+      } else {
+
+        dateDiv.textContent =
+          date.toLocaleDateString(
+            "fr-FR"
+          );
+
+      }
+
+
+      const textDiv =
+        document.createElement(
+          "div"
+        );
+
+      textDiv.textContent =
+        event.text;
+
+
+      item.appendChild(
+        dateDiv
       );
 
-    const formattedDate =
-      date.toLocaleDateString(
-        "fr-FR"
+      item.appendChild(
+        textDiv
       );
 
-    const dateDiv =
-      document.createElement("div");
 
-    dateDiv.className =
-      "search-date";
+      /*
+        Recherche volontairement
+        NON CLIQUABLE
+      */
 
-    dateDiv.textContent =
-      formattedDate;
 
-    const textDiv =
-      document.createElement("div");
+      results.appendChild(
+        item
+      );
 
-    textDiv.textContent =
-      event.text;
+    }
+  );
 
-    item.appendChild(dateDiv);
-    item.appendChild(textDiv);
-
-    results.appendChild(item);
-  });
 }
+
+
+/* DEMARRAGE */
 
 renderCalendar();
 
 </script>
 
 </body>
-</html>
+  </html>
