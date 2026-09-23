@@ -17,6 +17,7 @@ body {
   font-family: Arial, sans-serif;
   background: #f7f7f7;
   color: #222;
+  overscroll-behavior-x: none;
 }
 
 .app {
@@ -73,21 +74,17 @@ button {
 
 .calendar {
   background: white;
+  touch-action: pan-y;
 }
-
-/* UNE LIGNE DE SEMAINE */
 
 .week {
   position: relative;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   height: 116px;
-
   border-left: 1px solid #ddd;
   border-top: 1px solid #ddd;
 }
-
-/* LES 7 JOURS */
 
 .day {
   position: relative;
@@ -106,6 +103,10 @@ button {
   box-shadow: inset 0 0 0 2px #30b86b;
 }
 
+.day.has-hidden {
+  box-shadow: inset 0 -4px 0 #ff9800;
+}
+
 .day-number {
   position: absolute;
   top: 3px;
@@ -115,56 +116,35 @@ button {
   font-weight: bold;
 }
 
-/* CALQUE DES EVENEMENTS */
-
 .week-events {
   position: absolute;
-
   left: 0;
   right: 0;
-
   top: 23px;
-
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   grid-template-rows: repeat(5, 16px);
-
   row-gap: 2px;
-
   pointer-events: none;
-
   z-index: 5;
 }
 
-/* BARRE EVENEMENT */
-
 .event-bar {
   min-width: 0;
-
   margin-left: 2px;
   margin-right: 2px;
-
   border-radius: 4px;
-
   padding: 2px 4px;
-
   font-size: 10px;
   line-height: 12px;
-
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
   color: #111;
-
   pointer-events: auto;
-
   cursor: pointer;
-
   z-index: 6;
 }
-
-/* BARRE QUI CONTINUE DEPUIS JOUR PRECEDENT */
 
 .event-bar.continue-left {
   margin-left: 0;
@@ -172,29 +152,33 @@ button {
   border-bottom-left-radius: 0;
 }
 
-/* BARRE QUI CONTINUE LE JOUR SUIVANT */
-
 .event-bar.continue-right {
   margin-right: 0;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
-/* +X EVENEMENTS */
+/* INDICATION TRES VISIBLE DES EVENEMENTS CACHES */
 
 .more {
   position: absolute;
-  bottom: 3px;
-  left: 4px;
+  bottom: 4px;
+  right: 3px;
 
-  font-size: 10px;
+  background: #ff9800;
+  color: white;
+
+  border-radius: 10px;
+
+  padding: 2px 5px;
+
+  font-size: 9px;
   font-weight: bold;
-  color: #555;
 
-  z-index: 8;
+  z-index: 9;
+
+  box-shadow: 0 1px 3px rgba(0,0,0,.25);
 }
-
-/* BOUTON + */
 
 .add {
   position: fixed;
@@ -217,8 +201,6 @@ button {
 
   z-index: 30;
 }
-
-/* FENETRES */
 
 dialog {
   width: 92%;
@@ -428,8 +410,6 @@ textarea {
 </button>
 
 
-<!-- AJOUT / MODIFICATION -->
-
 <dialog id="eventDialog">
 
   <div class="modal">
@@ -489,8 +469,6 @@ textarea {
 </dialog>
 
 
-<!-- JOURNEE COMPLETE -->
-
 <dialog id="dayDialog">
 
   <div class="modal">
@@ -516,8 +494,6 @@ textarea {
 
 </dialog>
 
-
-<!-- RECHERCHE -->
 
 <dialog id="searchDialog">
 
@@ -580,9 +556,115 @@ let editingId = null;
 let selectedDay = null;
 
 
-/* ---------------------
-   DATES
----------------------- */
+/* GESTION DU GLISSEMENT */
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+const calendarElement =
+  document.getElementById("calendar");
+
+
+calendarElement.addEventListener(
+  "touchstart",
+  function(event) {
+
+    if (
+      event.touches.length !== 1
+    )
+      return;
+
+    touchStartX =
+      event.touches[0].clientX;
+
+    touchStartY =
+      event.touches[0].clientY;
+
+  },
+  {
+    passive: true
+  }
+);
+
+
+calendarElement.addEventListener(
+  "touchend",
+  function(event) {
+
+    if (
+      event.changedTouches.length !== 1
+    )
+      return;
+
+    const touchEndX =
+      event.changedTouches[0].clientX;
+
+    const touchEndY =
+      event.changedTouches[0].clientY;
+
+
+    const deltaX =
+      touchEndX - touchStartX;
+
+    const deltaY =
+      touchEndY - touchStartY;
+
+
+    /*
+      On considère qu'il s'agit
+      d'un vrai glissement horizontal
+      à partir de 45 pixels.
+
+      Il doit aussi être plus horizontal
+      que vertical.
+    */
+
+    if (
+      Math.abs(deltaX) < 45
+    )
+      return;
+
+
+    if (
+      Math.abs(deltaX)
+      <=
+      Math.abs(deltaY)
+    )
+      return;
+
+
+    /*
+      Glisser vers la gauche
+      = mois suivant
+    */
+
+    if (
+      deltaX < 0
+    ) {
+
+      nextMonth();
+
+    }
+
+    /*
+      Glisser vers la droite
+      = mois précédent
+    */
+
+    else {
+
+      previousMonth();
+
+    }
+
+  },
+  {
+    passive: true
+  }
+);
+
+
+/* DATES */
 
 function dateString(date) {
 
@@ -632,9 +714,7 @@ function addDays(date, days) {
 }
 
 
-/* ---------------------
-   STOCKAGE
----------------------- */
+/* STOCKAGE */
 
 function loadEvents() {
 
@@ -669,9 +749,7 @@ function storeEvents(events) {
 }
 
 
-/* ---------------------
-   EVENEMENTS D'UN JOUR
----------------------- */
+/* EVENEMENTS D'UN JOUR */
 
 function eventsForDay(day) {
 
@@ -692,9 +770,7 @@ function eventsForDay(day) {
 }
 
 
-/* ---------------------
-   PRIORITE
----------------------- */
+/* PRIORITES */
 
 function isMultiDay(event) {
 
@@ -732,17 +808,20 @@ function sortEventsPriority(a, b) {
   const bMulti =
     isMultiDay(b);
 
+
   if (
     aMulti &&
     !bMulti
   )
     return -1;
 
+
   if (
     !aMulti &&
     bMulti
   )
     return 1;
+
 
   if (
     aMulti &&
@@ -761,6 +840,7 @@ function sortEventsPriority(a, b) {
 
   }
 
+
   return (
     a.start.localeCompare(
       b.start
@@ -770,9 +850,7 @@ function sortEventsPriority(a, b) {
 }
 
 
-/* ---------------------
-   CALENDRIER
----------------------- */
+/* CALENDRIER */
 
 function renderCalendar() {
 
@@ -805,6 +883,7 @@ function renderCalendar() {
   let weekday =
     first.getDay();
 
+
   if (
     weekday === 0
   )
@@ -813,6 +892,7 @@ function renderCalendar() {
 
   const calendarStart =
     new Date(first);
+
 
   calendarStart.setDate(
     first.getDate()
@@ -845,9 +925,7 @@ function renderCalendar() {
 }
 
 
-/* ---------------------
-   UNE SEMAINE
----------------------- */
+/* UNE SEMAINE */
 
 function renderWeek(
   calendar,
@@ -868,8 +946,6 @@ function renderWeek(
       new Date()
     );
 
-
-  /* JOURNEES */
 
   for (
     let i = 0;
@@ -952,8 +1028,6 @@ function renderWeek(
   }
 
 
-  /* CALQUE EVENEMENTS */
-
   const layer =
     document.createElement(
       "div"
@@ -981,9 +1055,7 @@ function renderWeek(
 }
 
 
-/* ---------------------
-   PLACEMENT DES BARRES
----------------------- */
+/* PLACEMENT DES EVENEMENTS */
 
 function placeWeekEvents(
   layer,
@@ -1013,8 +1085,6 @@ function placeWeekEvents(
     loadEvents();
 
 
-  /* EVENEMENTS QUI CROISENT CETTE SEMAINE */
-
   const relevant =
     allEvents
     .filter(event => {
@@ -1035,14 +1105,6 @@ function placeWeekEvents(
       sortEventsPriority
     );
 
-
-  /*
-    lanes[ligne][jour]
-
-    null = disponible
-
-    id = occupé
-  */
 
   const lanes =
     Array.from(
@@ -1119,11 +1181,6 @@ function placeWeekEvents(
         -1;
 
 
-      /*
-        Chercher une ligne libre
-        sur TOUTE la durée.
-      */
-
       for (
         let lane = 0;
         lane < MAX_LANES;
@@ -1169,11 +1226,6 @@ function placeWeekEvents(
       }
 
 
-      /*
-        Plus de place :
-        +X sur les journées concernées
-      */
-
       if (
         laneFound === -1
       ) {
@@ -1193,10 +1245,6 @@ function placeWeekEvents(
       }
 
 
-      /*
-        Réserver la ligne
-      */
-
       for (
         let d = startIndex;
         d <= endIndex;
@@ -1211,10 +1259,6 @@ function placeWeekEvents(
       }
 
 
-      /*
-        Créer la barre
-      */
-
       const bar =
         document.createElement(
           "div"
@@ -1223,11 +1267,6 @@ function placeWeekEvents(
       bar.className =
         "event-bar";
 
-
-      /*
-        Barre qui continue
-        avant la semaine ?
-      */
 
       if (
         eventStart < weekStart
@@ -1239,11 +1278,6 @@ function placeWeekEvents(
 
       }
 
-
-      /*
-        Barre qui continue
-        après la semaine ?
-      */
 
       if (
         eventEnd > weekEnd
@@ -1272,11 +1306,6 @@ function placeWeekEvents(
         laneFound + 1;
 
 
-      /*
-        Sur une reprise de semaine,
-        on affiche quand même le texte.
-      */
-
       bar.textContent =
         event.text;
 
@@ -1300,10 +1329,6 @@ function placeWeekEvents(
   });
 
 
-  /*
-    Afficher +X
-  */
-
   const dayCells =
     week.querySelectorAll(
       ".day"
@@ -1322,6 +1347,13 @@ function placeWeekEvents(
         return;
 
 
+      dayCells[
+        index
+      ].classList.add(
+        "has-hidden"
+      );
+
+
       const more =
         document.createElement(
           "div"
@@ -1330,8 +1362,9 @@ function placeWeekEvents(
       more.className =
         "more";
 
+
       more.textContent =
-        "+"
+        "⚠ +"
         +
         hidden;
 
@@ -1348,9 +1381,7 @@ function placeWeekEvents(
 }
 
 
-/* ---------------------
-   NAVIGATION
----------------------- */
+/* NAVIGATION */
 
 function previousMonth() {
 
@@ -1397,9 +1428,7 @@ function goToday() {
 }
 
 
-/* ---------------------
-   COULEURS
----------------------- */
+/* COULEURS */
 
 function buildColors() {
 
@@ -1458,9 +1487,7 @@ function buildColors() {
 }
 
 
-/* ---------------------
-   NOUVEL EVENEMENT
----------------------- */
+/* NOUVEL EVENEMENT */
 
 function openNewEvent(day) {
 
@@ -1515,9 +1542,7 @@ function openNewEvent(day) {
 }
 
 
-/* ---------------------
-   MODIFIER
----------------------- */
+/* MODIFIER */
 
 function editEvent(id) {
 
@@ -1588,9 +1613,7 @@ function editEvent(id) {
 }
 
 
-/* ---------------------
-   SAUVEGARDER
----------------------- */
+/* SAUVEGARDER */
 
 function saveEvent() {
 
@@ -1713,9 +1736,7 @@ function saveEvent() {
 }
 
 
-/* ---------------------
-   SUPPRIMER
----------------------- */
+/* SUPPRIMER */
 
 function deleteEvent() {
 
@@ -1759,9 +1780,7 @@ function deleteEvent() {
 }
 
 
-/* ---------------------
-   FERMER
----------------------- */
+/* FERMER */
 
 function closeDialog() {
 
@@ -1772,9 +1791,7 @@ function closeDialog() {
 }
 
 
-/* ---------------------
-   JOURNEE
----------------------- */
+/* JOURNEE */
 
 function openDay(day) {
 
@@ -1894,9 +1911,7 @@ function addFromDay() {
 }
 
 
-/* ---------------------
-   RECHERCHE
----------------------- */
+/* RECHERCHE */
 
 function openSearch() {
 
@@ -2078,12 +2093,6 @@ function searchEvents() {
       );
 
 
-      /*
-        Recherche volontairement
-        NON CLIQUABLE
-      */
-
-
       results.appendChild(
         item
       );
@@ -2101,4 +2110,4 @@ renderCalendar();
 </script>
 
 </body>
-  </html>
+</html>
