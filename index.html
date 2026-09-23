@@ -216,6 +216,18 @@
       font-size: 15px;
     }
 
+    .search-result {
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    .search-date {
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+
     @media(max-width: 500px) {
       .day {
         min-height: 95px;
@@ -244,6 +256,7 @@
       <h1>Notre Calendrier</h1>
 
       <div>
+        <button onclick="openSearch()">🔍</button>
         <button onclick="previousMonth()">‹</button>
         <button onclick="goToday()">Aujourd'hui</button>
         <button onclick="nextMonth()">›</button>
@@ -270,7 +283,6 @@
 
 <button class="add" onclick="openNewEvent()">+</button>
 
-
 <dialog id="eventDialog">
 
   <div class="modal">
@@ -284,8 +296,10 @@
     <input type="date" id="endDate">
 
     <label>Événement</label>
-    <textarea id="eventText"
-      placeholder="Exemple : Piscine 10h"></textarea>
+    <textarea
+      id="eventText"
+      placeholder="Exemple : Piscine 10h">
+    </textarea>
 
     <label>Couleur</label>
 
@@ -293,7 +307,8 @@
 
     <div class="actions">
 
-      <button class="delete"
+      <button
+        class="delete"
         id="deleteButton"
         onclick="deleteEvent()">
         Supprimer
@@ -303,7 +318,8 @@
         Annuler
       </button>
 
-      <button class="save"
+      <button
+        class="save"
         onclick="saveEvent()">
         Enregistrer
       </button>
@@ -313,7 +329,6 @@
   </div>
 
 </dialog>
-
 
 <dialog id="dayDialog">
 
@@ -339,6 +354,34 @@
 
 </dialog>
 
+<dialog id="searchDialog">
+
+  <div class="modal">
+
+    <h2>Rechercher</h2>
+
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Exemple : mazout"
+      oninput="searchEvents()">
+
+    <div
+      id="searchResults"
+      style="margin-top:15px;">
+    </div>
+
+    <div class="actions">
+
+      <button onclick="closeSearch()">
+        Fermer
+      </button>
+
+    </div>
+
+  </div>
+
+</dialog>
 
 <script>
 
@@ -366,7 +409,6 @@ let editingId = null;
 
 let selectedDay = null;
 
-
 function dateString(date) {
 
   const y = date.getFullYear();
@@ -380,9 +422,7 @@ function dateString(date) {
     .padStart(2, "0");
 
   return y + "-" + m + "-" + d;
-
 }
-
 
 function loadEvents() {
 
@@ -393,9 +433,7 @@ function loadEvents() {
     return [];
 
   return JSON.parse(saved);
-
 }
-
 
 function storeEvents(events) {
 
@@ -403,9 +441,7 @@ function storeEvents(events) {
     "familyCalendar",
     JSON.stringify(events)
   );
-
 }
-
 
 function eventsForDay(day) {
 
@@ -420,9 +456,7 @@ function eventsForDay(day) {
     );
 
   });
-
 }
-
 
 function renderCalendar() {
 
@@ -441,7 +475,6 @@ function renderCalendar() {
         }
       );
 
-
   const first =
     new Date(displayedMonth);
 
@@ -458,10 +491,8 @@ function renderCalendar() {
     first.getDate() - weekday + 1
   );
 
-
   const today =
     dateString(new Date());
-
 
   for (
     let i = 0;
@@ -479,12 +510,10 @@ function renderCalendar() {
     const ds =
       dateString(date);
 
-
     const day =
       document.createElement("div");
 
     day.className = "day";
-
 
     if (
       date.getMonth() !==
@@ -494,12 +523,10 @@ function renderCalendar() {
         "other-month"
       );
 
-
     if (ds === today)
       day.classList.add(
         "today"
       );
-
 
     const number =
       document.createElement("div");
@@ -512,10 +539,8 @@ function renderCalendar() {
 
     day.appendChild(number);
 
-
     const events =
       eventsForDay(ds);
-
 
     events
       .slice(0,5)
@@ -546,7 +571,6 @@ function renderCalendar() {
 
       });
 
-
     if (events.length > 5) {
 
       const more =
@@ -562,7 +586,6 @@ function renderCalendar() {
 
     }
 
-
     day.onclick =
       function() {
 
@@ -570,13 +593,9 @@ function renderCalendar() {
 
       };
 
-
     calendar.appendChild(day);
-
   }
-
 }
-
 
 function previousMonth() {
 
@@ -588,9 +607,7 @@ function previousMonth() {
     );
 
   renderCalendar();
-
 }
-
 
 function nextMonth() {
 
@@ -602,9 +619,7 @@ function nextMonth() {
     );
 
   renderCalendar();
-
 }
-
 
 function goToday() {
 
@@ -619,9 +634,7 @@ function goToday() {
     );
 
   renderCalendar();
-
 }
-
 
 function buildColors() {
 
@@ -629,7 +642,6 @@ function buildColors() {
     document.getElementById("colors");
 
   container.innerHTML = "";
-
 
   COLORS.forEach(color => {
 
@@ -642,14 +654,12 @@ function buildColors() {
     button.style.background =
       color;
 
-
     if (
       color === selectedColor
     )
       button.classList.add(
         "selected"
       );
-
 
     button.onclick =
       function() {
@@ -658,16 +668,11 @@ function buildColors() {
           color;
 
         buildColors();
-
       };
 
-
     container.appendChild(button);
-
   });
-
 }
-
 
 function openNewEvent(day) {
 
@@ -681,38 +686,30 @@ function openNewEvent(day) {
   ).textContent =
     "Nouvel événement";
 
-
   document.getElementById(
     "eventText"
   ).value = "";
 
-
   document.getElementById(
     "endDate"
   ).value = "";
-
 
   document.getElementById(
     "startDate"
   ).value =
     day || dateString(new Date());
 
-
   document.getElementById(
     "deleteButton"
   ).style.display =
     "none";
 
-
   buildColors();
-
 
   document.getElementById(
     "eventDialog"
   ).showModal();
-
 }
-
 
 function editEvent(id) {
 
@@ -727,52 +724,42 @@ function editEvent(id) {
   if (!event)
     return;
 
-
   editingId = id;
 
   selectedColor =
     event.color;
-
 
   document.getElementById(
     "dialogTitle"
   ).textContent =
     "Modifier l'événement";
 
-
   document.getElementById(
     "eventText"
   ).value =
     event.text;
-
 
   document.getElementById(
     "startDate"
   ).value =
     event.start;
 
-
   document.getElementById(
     "endDate"
   ).value =
     event.end || "";
-
 
   document.getElementById(
     "deleteButton"
   ).style.display =
     "block";
 
-
   buildColors();
-
 
   document.getElementById(
     "eventDialog"
   ).showModal();
-
 }
-
 
 function saveEvent() {
 
@@ -781,18 +768,15 @@ function saveEvent() {
       "eventText"
     ).value.trim();
 
-
   const start =
     document.getElementById(
       "startDate"
     ).value;
 
-
   let end =
     document.getElementById(
       "endDate"
     ).value;
-
 
   if (!text || !start) {
 
@@ -801,13 +785,10 @@ function saveEvent() {
     );
 
     return;
-
   }
-
 
   if (!end)
     end = start;
-
 
   if (end < start) {
 
@@ -816,13 +797,10 @@ function saveEvent() {
     );
 
     return;
-
   }
-
 
   let events =
     loadEvents();
-
 
   if (editingId) {
 
@@ -863,25 +841,19 @@ function saveEvent() {
         selectedColor
 
     });
-
   }
 
-
   storeEvents(events);
-
 
   closeDialog();
 
   renderCalendar();
-
 }
-
 
 function deleteEvent() {
 
   if (!editingId)
     return;
-
 
   if (
     !confirm(
@@ -890,47 +862,37 @@ function deleteEvent() {
   )
     return;
 
-
   let events =
     loadEvents();
-
 
   events =
     events.filter(
       e => e.id !== editingId
     );
 
-
   storeEvents(events);
-
 
   closeDialog();
 
   renderCalendar();
-
 }
-
 
 function closeDialog() {
 
   document.getElementById(
     "eventDialog"
   ).close();
-
 }
-
 
 function openDay(day) {
 
   selectedDay =
     day;
 
-
   const date =
     new Date(
       day + "T12:00:00"
     );
-
 
   document.getElementById(
     "dayTitle"
@@ -944,27 +906,21 @@ function openDay(day) {
       }
     );
 
-
   const container =
     document.getElementById(
       "dayEvents"
     );
 
-
   container.innerHTML = "";
-
 
   const events =
     eventsForDay(day);
-
 
   if (!events.length) {
 
     container.textContent =
       "Aucun événement.";
-
   }
-
 
   events.forEach(event => {
 
@@ -980,7 +936,6 @@ function openDay(day) {
     item.textContent =
       event.text;
 
-
     item.onclick =
       function() {
 
@@ -989,21 +944,15 @@ function openDay(day) {
         ).close();
 
         editEvent(event.id);
-
       };
 
-
     container.appendChild(item);
-
   });
-
 
   document.getElementById(
     "dayDialog"
   ).showModal();
-
 }
-
 
 function addFromDay() {
 
@@ -1014,9 +963,116 @@ function addFromDay() {
   openNewEvent(
     selectedDay
   );
-
 }
 
+function openSearch() {
+
+  document.getElementById(
+    "searchInput"
+  ).value = "";
+
+  document.getElementById(
+    "searchResults"
+  ).innerHTML = "";
+
+  document.getElementById(
+    "searchDialog"
+  ).showModal();
+
+  setTimeout(() => {
+    document.getElementById(
+      "searchInput"
+    ).focus();
+  }, 100);
+}
+
+function closeSearch() {
+
+  document.getElementById(
+    "searchDialog"
+  ).close();
+}
+
+function searchEvents() {
+
+  const query =
+    document.getElementById(
+      "searchInput"
+    ).value
+    .trim()
+    .toLowerCase();
+
+  const results =
+    document.getElementById(
+      "searchResults"
+    );
+
+  results.innerHTML = "";
+
+  if (!query)
+    return;
+
+  const events =
+    loadEvents()
+    .filter(event =>
+      event.text
+        .toLowerCase()
+        .includes(query)
+    )
+    .sort((a,b) =>
+      b.start.localeCompare(a.start)
+    );
+
+  if (!events.length) {
+
+    results.innerHTML =
+      "<p>Aucun résultat.</p>";
+
+    return;
+  }
+
+  events.forEach(event => {
+
+    const item =
+      document.createElement("div");
+
+    item.className =
+      "search-result";
+
+    item.style.background =
+      event.color;
+
+    const date =
+      new Date(
+        event.start + "T12:00:00"
+      );
+
+    const formattedDate =
+      date.toLocaleDateString(
+        "fr-FR"
+      );
+
+    const dateDiv =
+      document.createElement("div");
+
+    dateDiv.className =
+      "search-date";
+
+    dateDiv.textContent =
+      formattedDate;
+
+    const textDiv =
+      document.createElement("div");
+
+    textDiv.textContent =
+      event.text;
+
+    item.appendChild(dateDiv);
+    item.appendChild(textDiv);
+
+    results.appendChild(item);
+  });
+}
 
 renderCalendar();
 
